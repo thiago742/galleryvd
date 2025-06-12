@@ -28,10 +28,10 @@ const generatePhotos = (): Photo[] => {
 
   // Quantidade de fotos por categoria
   const photoCounts: { [key: string]: number } = {
-    'arrumadinhos': 11,
-    'momentinhos': 15,
-    'pijaminhas': 10,
-    'comidinhas': 10
+    'arrumadinhos': 17,
+    'momentinhos': 21,
+    'pijaminhas': 15,
+    'comidinhas': 23
   };
 
   categories.forEach(category => {
@@ -54,6 +54,7 @@ const generatePhotos = (): Photo[] => {
     }
   });
 
+  console.log('Fotos geradas:', photos);
   return photos;
 };
 
