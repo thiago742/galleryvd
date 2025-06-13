@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import TimeCounter from './TimeCounter';
 
 interface Photo {
   id: number;
@@ -68,7 +69,7 @@ const Container = styled.div`
   height: 100dvh;
   overflow: hidden;
   position: relative;
-  background: #fff0f5;
+  background: #D25D5F;
 `;
 
 const MenuButton = styled.button`
@@ -235,7 +236,7 @@ const NavigationDots = styled.div`
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
+  display: none;
   justify-content: center;
   gap: 0.8rem;
   z-index: 100;
@@ -261,6 +262,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ menuInitiallyOpen = false }
   const [selectedCategory, setSelectedCategory] = useState<string>('arrumadinhos');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(menuInitiallyOpen);
+  const [showTimeCounter, setShowTimeCounter] = useState(false);
   const filteredPhotos = photos.filter(photo => photo.category === selectedCategory);
   const currentCategory = categories.find(cat => cat.id === selectedCategory);
 
@@ -284,73 +286,80 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ menuInitiallyOpen = false }
   }, [selectedCategory, menuInitiallyOpen]);
 
   return (
-    <Container>
-      <MenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
-        {isMenuOpen ? '✕' : '☰'}
-      </MenuButton>
+    <>
+      {showTimeCounter ? (
+        <TimeCounter onBack={() => setShowTimeCounter(false)} />
+      ) : (
+        <Container>
+          <MenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? '✕' : '☰'}
+          </MenuButton>
 
-      <MenuOverlay isOpen={isMenuOpen}>
-        {categories.map(category => (
-          <CategoryButton
-            key={category.id}
-            active={selectedCategory === category.id}
-            onClick={() => handleCategorySelect(category.id)}
-          >
-            <span>{category.emoji}</span>
-            {category.name}
-          </CategoryButton>
-        ))}
-      </MenuOverlay>
-
-      {currentCategory && (
-        <>
-          <CategoryTitle>
-            <span>{currentCategory.emoji}</span>
-            {currentCategory.name}
-          </CategoryTitle>
-          <NavigationDots>
-            {filteredPhotos.map((_, index) => (
-              <Dot key={index} active={index === currentIndex} />
+          <MenuOverlay isOpen={isMenuOpen}>
+            {categories.map(category => (
+              <CategoryButton
+                key={category.id}
+                active={selectedCategory === category.id}
+                onClick={() => handleCategorySelect(category.id)}
+              >
+                <span>{category.emoji}</span>
+                {category.name}
+              </CategoryButton>
             ))}
-          </NavigationDots>
-        </>
+            <CategoryButton
+              active={showTimeCounter}
+              onClick={() => setShowTimeCounter(true)}
+            >
+              <span>⏰</span>
+              Nosso Tempo
+            </CategoryButton>
+          </MenuOverlay>
+
+          {currentCategory && (
+            <>
+              <CategoryTitle>
+                <span>{currentCategory.emoji}</span>
+                {currentCategory.name}
+              </CategoryTitle>
+              <NavigationDots>
+                {filteredPhotos.map((_, index) => (
+                  <Dot key={index} active={index === currentIndex} />
+                ))}
+              </NavigationDots>
+            </>
+          )}
+
+          <CarouselContainer>
+            <CarouselTrack translateX={-currentIndex * window.innerWidth}>
+              {filteredPhotos.map((photo, index) => (
+                <Slide key={photo.id}>
+                  <Photo 
+                    src={photo.src} 
+                    alt={photo.description}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </Slide>
+              ))}
+            </CarouselTrack>
+
+            {currentIndex > 0 && (
+              <NavigationButton className="prev" onClick={handlePrev}>
+                ←
+              </NavigationButton>
+            )}
+            
+            {currentIndex < filteredPhotos.length - 1 && (
+              <NavigationButton className="next" onClick={handleNext}>
+                →
+              </NavigationButton>
+            )}
+          </CarouselContainer>
+        </Container>
       )}
-
-      <CarouselContainer>
-        <CarouselTrack translateX={-currentIndex * window.innerWidth}>
-          {filteredPhotos.map((photo, index) => (
-            <Slide key={photo.id}>
-              <Photo 
-                src={photo.src} 
-                alt={photo.description}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </Slide>
-          ))}
-        </CarouselTrack>
-
-        {currentIndex > 0 && (
-          <NavigationButton className="prev" onClick={handlePrev}>
-            ←
-          </NavigationButton>
-        )}
-        
-        {currentIndex < filteredPhotos.length - 1 && (
-          <NavigationButton className="next" onClick={handleNext}>
-            →
-          </NavigationButton>
-        )}
-      </CarouselContainer>
-
-      <NavigationDots>
-        {filteredPhotos.map((_, index) => (
-          <Dot key={index} active={index === currentIndex} />
-        ))}
-      </NavigationDots>
-    </Container>
+    </>
   );
 };
 
